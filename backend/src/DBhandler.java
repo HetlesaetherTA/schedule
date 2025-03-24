@@ -29,15 +29,28 @@
 //  ...
 // }
 
+import java.lang.reflect.Method;
 import java.sql.*;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DBhandler {
     Connection conn;
-    public DBhandler() throws SQLException {
+    public DBhandler(boolean isProd) throws SQLException {
         try {
-            conn = DriverManager.getConnection("jdbc:sqlite:state.db");
+            if (isProd) {
+                conn = DriverManager.getConnection("jdbc:sqlite:state.db");
+            } else {
+                conn = DriverManager.getConnection("jdbc:sqlite:test.db");
+            }
+
             Statement stmt = conn.createStatement();
 
             stmt.executeUpdate(
@@ -54,92 +67,125 @@ public class DBhandler {
             )"""
             );
 
-
+            ResultSet rs = stmt.executeQuery("""
+                SELECT * FROM `entities`
+                WHERE uuid = 0
+""");
+            if (!rs.next()) {
+                injectEntity(new Root());
+            }
             stmt.close();
-
-            System.out.println(generateUUID());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    private int generateUUID() {
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT MAX(uuid) FROM `entities`");
-            return rs.next() ? rs.getInt(1) + 1 : 0; // start at 0 if DB is empty
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1; }
+
+    public Entity create(int parent_uuid, Entity newItem) {
+        injectEntity(newItem);
+        createRelationship(parent_uuid, newItem);
+        return newItem;
     }
 
-    public Entity get(int uuid) {
-        try {
-            PreparedStatement stmt = conn.prepareStatement(
-                    """
-                    SELECT * FROM entities WHERE uuid = ?
-                            """);
 
+    // TODO: add validation that Entity and DB is the same
+    public Entity create(Entity parent, Entity newItem) {
+        newItem = create(parent.getUUID(), newItem);
+        parent.sync(this);
+        return newItem;
+    }
+
+    // createEntry without parent makes root the parent.
+    public Entity create(Entity newItem) {
+        try {
+            create(0, newItem);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return newItem;
+    }
+
+    public Entity readWithDmp(int uuid) {
+        return read(uuid, true);
+    }
+
+    public Entity read(int uuid) {
+        return read(uuid, false);
+    }
+
+    public Entity read(int uuid, Boolean withDmp) {
+        try {
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `entities` WHERE uuid = ?");
             stmt.setInt(1, uuid);
+
             ResultSet rs = stmt.executeQuery();
 
+            if (!rs.next()) {
+                // uuid not in DB
+                return null;
+            }
+
+            // get Name
+            String name = rs.getString("name");
+
+            // handle link
+            JsonObject linkJSON = JsonParser.parseString(rs.getString("link")).getAsJsonObject();
+            HashMap<String, String> link = jsonObjectToHashMap(linkJSON);
+
+            // handle state
+            String state = rs.getString("state");
+
+            // handle depth
+            int depth = rs.getInt("depth");
+
+            // get children
+            String children = rs.getString("children");
+
+            // get and handle type
+            JsonObject type = JsonParser.parseString(rs.getString("type")).getAsJsonObject();
+            String className = type.keySet().iterator().next();
+
+            JsonObject typeParamsJSON = type.getAsJsonObject(className);
+            HashMap<String, String> typeParams = jsonObjectToHashMap(typeParamsJSON);
+
+            // get and handle dmp
+            HashMap<String, String> dmp = new HashMap<>();
+
+            if (withDmp) {
+                JsonObject dmpJSON = JsonParser.parseString(rs.getString("dmp")).getAsJsonObject();
+                dmp = jsonObjectToHashMap(dmpJSON);
+            }
+
+            // Little 'WTF' at first glance.
+            // gets class name and runs constructFromDB in corisponding Entity subclass
+            Class<? extends Entity> clazz = Entity.classMap.get(className);
+            Method factoryMethod = clazz.getMethod("constructFromDB", HashMap.class, String.class, HashMap.class, String.class, HashMap.class);
+
+            // gives all necesary info to Entity subclass and let's it handle params on a class to class level.
+            Entity entity = (Entity) factoryMethod.invoke(null, typeParams, name, link, state, dmp);
+            entity.setChildren(children);
+            entity.setUUID(uuid);
+
+            stmt.close();
+            return entity;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public Entity getParent(Entity entity) {
-        return null;
-    }
-
-    // all entries must have a parent, parent must therefore be
-    // defined at creation. Lowest level Entries has "root" as parent.
-    public Entity createEntry(Entity parent, Entity newItem) {
-        int uuid = generateUUID();
-
-        Gson gson = new Gson(); // json library
-
-        try {
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO entities VALUES (?,?,?,?,?,?,?,?)");
-            stmt.setInt(1, uuid);
-            stmt.setString(2,newItem.getName());
-            stmt.setString(3, newItem.parseType());
-            stmt.setString(4, gson.toJson(newItem.getLink()));
-            stmt.setString(5,newItem.getState());
-            stmt.setInt(6,newItem.getDepth());
-            stmt.setString(7, String.join(";", newItem.getChildren()));
-            stmt.setString(8, gson.toJson(newItem.getDmp()));
-
-            stmt.executeUpdate();
-            createRelationship(parent, newItem);
-        } catch (Exception e) {
-            e.printStackTrace();
+    private HashMap<String, String> jsonObjectToHashMap(JsonObject jsonObject) {
+        HashMap<String, String> map = new HashMap<>();
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().getAsString());
         }
+        return map;
     }
 
-    public void commitChange(Entity entry) {
+    public void update(int uuid, Entity entry) throws SQLException {
 
     }
 
-
-
-    private void createRelationship(Entity parent, Entity child) {
-        parent.add
-        try {
-
-            PreparedStatement stmt = conn.prepareStatement("""
-                UPDATE entities
-                SET children=children || ';' || uuid
-                WHERE uuid = ?
-    """);
-
-        stmt.setInt(1, Integer.parseInt());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void removeEntry(int uuid) {
+    public void delete(int uuid) {
         try {
             PreparedStatement stmt = conn.prepareStatement("""
             DELETE FROM entities
@@ -152,29 +198,152 @@ public class DBhandler {
         }
     }
 
+    public void sync(Entity entry) {
+
+    }
+
+    public void cleanUpTest() {
+        System.out.println("Clean up");
+        try {
+            if (!conn.getMetaData().getURL().equals("jdbc:sqlite:test.db")) {
+                return;
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("DROP TABLE IF EXISTS `entities`");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private int generateUUID() {
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT MAX(uuid) FROM `entities`");
+            int uuid = rs.next() ? rs.getInt(1) + 1 : 0; // start at 0 if DB is empty
+            stmt.close();
+            return uuid;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1; }
+    }
+
+
+    private void injectEntity(Entity newItem) {
+        if (newItem instanceof Root) {
+            newItem.setUUID(0);
+        } else {
+            newItem.setUUID(generateUUID());
+        }
+
+        Gson gson = new Gson();
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement("INSERT INTO entities VALUES (?,?,?,?,?,?,?,?)");
+            stmt.setInt(1, newItem.getUUID());
+            stmt.setString(2, newItem.getName());
+            stmt.setString(3, newItem.parseType());
+            stmt.setString(4, gson.toJson(newItem.getLink()));
+            stmt.setString(5, newItem.getState());
+            stmt.setInt(6, newItem.getDepth());
+            stmt.setString(7, String.join(";", newItem.getChildren()));
+            stmt.setString(8, gson.toJson(newItem.getDmp()));
+            stmt.executeUpdate();
+
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // all entries must have a parent, parent must therefore be
+    // defined at creation. Lowest level Entries has "root" as parent.
+
+
+
+    private void createRelationship(int uuid, Entity child) {
+        String currentChildren = "";
+        try {
+            PreparedStatement stmt = conn.prepareStatement("""
+                SELECT children FROM entities WHERE uuid = ?
+        """);
+
+            stmt.setInt(1, uuid);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                currentChildren = rs.getString("children");
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            };
+
+        for (String childUUID : currentChildren.split(";")) {
+            if (String.valueOf(child.getUUID()).equals(childUUID)) {
+                return;
+            }
+        }
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement("""
+                UPDATE entities
+                SET children = ?
+                WHERE uuid = ?
+""");
+            stmt.setString(1, currentChildren+String.valueOf(child.getUUID())+";");
+            stmt.setInt(2, uuid);
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM `entities`");
+            ResultSetMetaData meta = rs.getMetaData();
 
-            while (rs.next()) {
-                sb.append(
-                        rs.getInt("uuid") + " | " +
-                        rs.getString("name") + " | " +
-                        rs.getString("type") + " | " +
-                        rs.getString("link") + " | " +
-                        rs.getString("state") + " | " +
-                        rs.getInt("depth") + " | " +
-                        rs.getString("children") + " | " +
-                        rs.getString("dmp") + "\n"
-                );
+            List<String[]> rows = new ArrayList<>();
+            int[] columnWidths = new int[meta.getColumnCount()];
+
+            // Add headers
+            String[] headers = new String[meta.getColumnCount()];
+            for (int i = 0; i < headers.length; i++) {
+                headers[i] = meta.getColumnName(i+1);
+                columnWidths[i] = headers[i].length();
             }
+
+            rows.add(headers);
+
+            // Add body
+            while (rs.next()) {
+                String[] row = new String[meta.getColumnCount()];
+                for (int i = 0; i < row.length; i++) {
+                    row[i] = rs.getString(headers[i]) != null ? rs.getString(headers[i]) : "NULL";
+                    columnWidths[i] = Math.max(columnWidths[i], row[i].length());
+                }
+                rows.add(row);
+            }
+
+            for (String[] row : rows) {
+                for (int i = 0; i < row.length; i++) {
+                    sb.append(pad(row[i], columnWidths[i])).append(" | ");
+                }
+                sb.append("\n");
+            }
+            stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         };
 
         return sb.toString();
+    }
+    private static String pad(String s, int width) {
+        return String.format("%-" + width + "s", s);
     }
 }

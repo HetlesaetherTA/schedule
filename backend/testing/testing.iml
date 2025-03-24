@@ -7,6 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="junit.jupiter" level="project" />
+    <orderEntry type="module" module-name="backend" scope="TEST" />
+    <orderEntry type="library" exported="" name="junit.jupiter" level="project" />
   </component>
 </module>
