@@ -14,11 +14,6 @@ public class Calendar extends Entity {
        return "{\"Calendar\":{\"startTime\":\"" + startTime + "\",\"endTime\":\"" + endTime + "\"}}";
    }
 
-   @Override
-    public int calculateDepth() {
-       return 0;
-   }
-
    public static Calendar constructFromDB(HashMap<String,String> params, int uuid, String name, HashMap<String, String> link, String state, int depth) {
        String l_startTime = params.get("startTime");
        String l_endTime = params.get("endTime");

@@ -40,6 +40,12 @@ class DBhandlerTest {
 
     }
 
+    private Entity getDeletedEntity(int uuid) {
+        Entity entity = new Project(null,null,null,null,null);
+        entity.setUUID(uuid);
+        return entity;
+    }
+
     @BeforeEach
     void setup() {
         try {
@@ -57,11 +63,12 @@ class DBhandlerTest {
     @Test
     void createToRoot() {
         Entity test = db.create(getExampleEntity());
-        Entity test2 = db.readWithDmp(1);
+        Entity test2 = db.read(1);
+        System.out.println(test2 + "\n\n\n\n");
 
         System.out.println(test.toString() + "\n" + test2.toString());
         System.out.println(db.toString());
-        Assertions.assertEquals(test.toString(), test2.toString());
+        Assertions.assertEquals(test.toStringWithoutDMP(), test2.toStringWithoutDMP());
     }
 
     @Test
@@ -83,4 +90,33 @@ class DBhandlerTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    void create150Requests() {
+        int i = 0;
+        while (i < 50) {
+            Entity test = db.create(getExampleEntity());
+            Entity test2 = db.create(test, getExampleEntity());
+            Entity test3 = db.create(test2, getExampleEntity());
+            i++;
+        }
+
+        System.out.println(db.toString());
+        Assertions.assertEquals(151, db.size());
+    }
+    @Test
+    void deleteEntry() {
+        Entity test = db.create(getExampleEntity());
+        Entity test2 = db.create(test, getExampleEntity());
+        db.delete(2);
+
+        System.out.println(db.toString() + "\n\n\n\n");
+
+        Entity[] entityArray = new Entity[] {test, test2};
+
+        Entity removedEntity = db.read(2);
+
+        Assertions.assertEquals(removedEntity.toStringWithoutDMP(), new DeletedEntity(1, new HashMap<>()).toStringWithoutDMP());
+    }
 }
+

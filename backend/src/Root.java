@@ -6,11 +6,6 @@ public class Root extends Entity {
     }
 
     @Override
-    protected int calculateDepth() {
-       return 0;
-    }
-
-    @Override
     public String parseType() {
         return "{root:{}}";
     }

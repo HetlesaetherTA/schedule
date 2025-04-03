@@ -36,12 +36,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
-public class DBhandler {
+public class DBhandler implements Iterable<Entity> {
     Connection conn;
     public DBhandler(boolean isProd) throws SQLException {
         try {
@@ -74,20 +73,46 @@ public class DBhandler {
             if (!rs.next()) {
                 injectEntity(new Root());
             }
+            rs.close();
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @Override
+    public Iterator<Entity> iterator() {
+        return readAll().iterator();
+    }
+
+    public Entity[] createFromArray(Entity[] entities) {
+        for (Entity e : entities) {
+            create(e);
+        }
+        return entities;
+    }
+
     public Entity create(int parent_uuid, Entity newItem) {
-        injectEntity(newItem);
-        createRelationship(parent_uuid, newItem);
+        try {
+            PreparedStatement stmt = conn.prepareStatement("SELECT depth FROM `entities` WHERE uuid= ?");
+            stmt.setInt(1, parent_uuid);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                newItem.setDepth(rs.getInt("depth") + 1);
+            }
+            injectEntity(newItem);
+            createRelationship(parent_uuid, newItem);
+            rs.close();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return newItem;
     }
 
 
-    // TODO: add validation that Entity and DB is the same
     public Entity create(Entity parent, Entity newItem) {
         newItem = create(parent.getUUID(), newItem);
         parent.sync(this);
@@ -121,18 +146,35 @@ public class DBhandler {
 
             if (!rs.next()) {
                 // uuid not in DB
+                stmt.close();
+                rs.close();
                 return null;
             }
 
             // get Name
             String name = rs.getString("name");
 
+            // handle state
+            String state = rs.getString("state");
+
+            // get and handle dmp
+            HashMap<String, String> dmp = new HashMap<>();
+
+            if (withDmp) {
+                JsonObject dmpJSON = JsonParser.parseString(rs.getString("dmp")).getAsJsonObject();
+                dmp = jsonObjectToHashMap(dmpJSON);
+            }
+
+            if (state == null) {
+                rs.close();
+                stmt.close();
+                return new DeletedEntity(uuid, dmp);
+            }
+
             // handle link
             JsonObject linkJSON = JsonParser.parseString(rs.getString("link")).getAsJsonObject();
             HashMap<String, String> link = jsonObjectToHashMap(linkJSON);
 
-            // handle state
-            String state = rs.getString("state");
 
             // handle depth
             int depth = rs.getInt("depth");
@@ -147,14 +189,6 @@ public class DBhandler {
             JsonObject typeParamsJSON = type.getAsJsonObject(className);
             HashMap<String, String> typeParams = jsonObjectToHashMap(typeParamsJSON);
 
-            // get and handle dmp
-            HashMap<String, String> dmp = new HashMap<>();
-
-            if (withDmp) {
-                JsonObject dmpJSON = JsonParser.parseString(rs.getString("dmp")).getAsJsonObject();
-                dmp = jsonObjectToHashMap(dmpJSON);
-            }
-
             // Little 'WTF' at first glance.
             // gets class name and runs constructFromDB in corisponding Entity subclass
             Class<? extends Entity> clazz = Entity.classMap.get(className);
@@ -162,15 +196,26 @@ public class DBhandler {
 
             // gives all necesary info to Entity subclass and let's it handle params on a class to class level.
             Entity entity = (Entity) factoryMethod.invoke(null, typeParams, name, link, state, dmp);
+            entity.setDepth(depth);
             entity.setChildren(children);
             entity.setUUID(uuid);
 
+            rs.close();
             stmt.close();
             return entity;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<Entity> readAll() {
+        List<Entity> entities = new ArrayList<>();
+
+        for (int i=0; i < size(); i++) {
+            entities.add(read(i));
+        }
+        return entities;
     }
 
     private HashMap<String, String> jsonObjectToHashMap(JsonObject jsonObject) {
@@ -181,18 +226,50 @@ public class DBhandler {
         return map;
     }
 
+    public int size() {
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `entities`");
+            if (rs.next()) {
+                int result = rs.getInt(1);
+                stmt.close();
+                rs.close();
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
     public void update(int uuid, Entity entry) throws SQLException {
 
     }
 
     public void delete(int uuid) {
+        Gson gson = new Gson();
+
+        Entity removedEntity = readWithDmp(uuid);
+        System.out.println(removedEntity.toString());
+        HashMap<String, String> dmp = removedEntity.getDmp();
+        dmp.put("deleted", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
         try {
             PreparedStatement stmt = conn.prepareStatement("""
-            DELETE FROM entities
+            UPDATE `entities`
+            SET name = NULL,
+                type = NULL,
+                link = NULL,
+                state = NULL,
+                depth = NULL,
+                children = NULL,
+                dmp = ?
             WHERE uuid = ?
 """);
-            stmt.setInt(1, uuid);
+            stmt.setString(1, gson.toJson(dmp));
+            stmt.setInt(2, uuid);
             stmt.executeUpdate();
+            stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -212,6 +289,7 @@ public class DBhandler {
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("DROP TABLE IF EXISTS `entities`");
             }
+            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -221,6 +299,7 @@ public class DBhandler {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT MAX(uuid) FROM `entities`");
             int uuid = rs.next() ? rs.getInt(1) + 1 : 0; // start at 0 if DB is empty
+            rs.close();
             stmt.close();
             return uuid;
         } catch (Exception e) {
@@ -273,6 +352,7 @@ public class DBhandler {
             if (rs.next()) {
                 currentChildren = rs.getString("children");
             }
+            rs.close();
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -293,10 +373,16 @@ public class DBhandler {
             stmt.setString(1, currentChildren+String.valueOf(child.getUUID())+";");
             stmt.setInt(2, uuid);
             stmt.executeUpdate();
+
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateDepth(int uuid, Entity child) {
+        Entity parent = read(uuid);
+        child.setDepth(parent.getDepth() + 1);
     }
 
 
@@ -336,11 +422,11 @@ public class DBhandler {
                 }
                 sb.append("\n");
             }
+            rs.close();
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         };
-
         return sb.toString();
     }
     private static String pad(String s, int width) {
