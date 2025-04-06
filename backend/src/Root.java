@@ -1,3 +1,4 @@
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public class Root extends Entity {
@@ -8,5 +9,9 @@ public class Root extends Entity {
     @Override
     public String parseType() {
         return "{root:{}}";
+    }
+
+    public Root constructFromDB() {
+        return this;
     }
 }

@@ -126,7 +126,7 @@ public abstract class Entity {
     }
 
     public void sync(DBhandler db) {
-        Entity upToDate = db.readWithDmp(getUUID());
+        Entity upToDate = db.read(getUUID(), true);
         System.out.println("upToDate: " + upToDate.toString());
         this.children = upToDate.children;
         this.state = upToDate.state;

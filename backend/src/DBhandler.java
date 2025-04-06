@@ -129,10 +129,6 @@ public class DBhandler implements Iterable<Entity> {
         return newItem;
     }
 
-    public Entity readWithDmp(int uuid) {
-        return read(uuid, true);
-    }
-
     public Entity read(int uuid) {
         return read(uuid, false);
     }
@@ -191,14 +187,20 @@ public class DBhandler implements Iterable<Entity> {
 
             // Little 'WTF' at first glance.
             // gets class name and runs constructFromDB in corisponding Entity subclass
-            Class<? extends Entity> clazz = Entity.classMap.get(className);
-            Method factoryMethod = clazz.getMethod("constructFromDB", HashMap.class, String.class, HashMap.class, String.class, HashMap.class);
+            Entity entity;
+            try {
+                Class<? extends Entity> clazz = Entity.classMap.get(className);
+                Method factoryMethod = clazz.getMethod("constructFromDB", HashMap.class, String.class, HashMap.class, String.class, HashMap.class);
 
-            // gives all necesary info to Entity subclass and let's it handle params on a class to class level.
-            Entity entity = (Entity) factoryMethod.invoke(null, typeParams, name, link, state, dmp);
-            entity.setDepth(depth);
-            entity.setChildren(children);
-            entity.setUUID(uuid);
+                // gives all necesary info to Entity subclass and let's it handle params on a class to class level.
+                entity = (Entity) factoryMethod.invoke(null, typeParams, name, link, state, dmp);
+
+                entity.setDepth(depth);
+                entity.setChildren(children);
+                entity.setUUID(uuid);
+            } catch (Exception e) {
+                throw new NoSuchMethodException(className + " might not exist or implement constructFromDB correctly");
+            }
 
             rs.close();
             stmt.close();
@@ -212,7 +214,7 @@ public class DBhandler implements Iterable<Entity> {
     public List<Entity> readAll() {
         List<Entity> entities = new ArrayList<>();
 
-        for (int i=0; i < size(); i++) {
+        for (int i=1; i < size(); i++) {
             entities.add(read(i));
         }
         return entities;
@@ -242,28 +244,40 @@ public class DBhandler implements Iterable<Entity> {
     }
 
 
-    public void update(int uuid, Entity entry) throws SQLException {
-
-    }
-
-    public void delete(int uuid) {
+    public Entity update(int uuid, Entity entry) {
         Gson gson = new Gson();
-
-        Entity removedEntity = readWithDmp(uuid);
-        System.out.println(removedEntity.toString());
-        HashMap<String, String> dmp = removedEntity.getDmp();
-        dmp.put("deleted", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
         try {
             PreparedStatement stmt = conn.prepareStatement("""
+                    UPDATE `entities`
+                    SET name = ?,
+                    link = ?,
+                    state = ?
+                    WHERE uuid = ?
+                    """);
+            stmt.setString(1, entry.getName());
+            stmt.setString(2, gson.toJson(entry.getLink()));
+            stmt.setString(3, entry.getState());
+            stmt.setInt(4, uuid);
+            pushDmp(uuid, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), read(uuid).toStringWithoutDMP());
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to update entity with uuid: " + uuid, e);
+        }
+        return read(uuid);
+    }
+
+    private void pushDmp(int uuid, String key, String value) {
+        Gson gson = new Gson();
+
+        Entity entity = read(uuid, true);
+        HashMap<String, String> dmp = entity.getDmp();
+        dmp.put(key, value);
+        try {
+            PreparedStatement stmt = conn.prepareStatement("""
             UPDATE `entities`
-            SET name = NULL,
-                type = NULL,
-                link = NULL,
-                state = NULL,
-                depth = NULL,
-                children = NULL,
-                dmp = ?
+            SET dmp = ?
             WHERE uuid = ?
 """);
             stmt.setString(1, gson.toJson(dmp));
@@ -275,8 +289,52 @@ public class DBhandler implements Iterable<Entity> {
         }
     }
 
-    public void sync(Entity entry) {
+    public void delete(int uuid, boolean recursive) {
+        if (uuid == 0) {
+            throw new IllegalArgumentException("root cannot be deleted");
+        }
+        Gson gson = new Gson();
 
+        Entity removedEntity = read(uuid, true);
+
+        if (removedEntity == null) {
+            throw new IllegalArgumentException("Entity with uuid " + uuid + " not found");
+        }
+
+        Integer[] childrenUUIDs = Arrays.stream(removedEntity.getChildren().split(";"))
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .toArray(Integer[]::new);
+
+        if (!recursive && childrenUUIDs.length > 0) {
+            throw new IllegalStateException("Recursive deletion not checked and entity has children");
+        }
+
+        if (recursive) {
+            for (int entityUUID : childrenUUIDs) {
+                delete(entityUUID, true);
+            }
+        }
+
+        pushDmp(uuid, "deleted", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement("""
+            UPDATE `entities`
+            SET name = NULL,
+                type = NULL,
+                link = NULL,
+                state = NULL,
+                depth = NULL,
+                children = NULL
+            WHERE uuid = ?
+""");
+            stmt.setInt(1, uuid);
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void cleanUpTest() {
@@ -429,6 +487,7 @@ public class DBhandler implements Iterable<Entity> {
         };
         return sb.toString();
     }
+
     private static String pad(String s, int width) {
         return String.format("%-" + width + "s", s);
     }
