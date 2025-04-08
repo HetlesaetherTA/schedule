@@ -5,7 +5,12 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) {
         try {
-            return;
+            DBhandler db = new DBhandler(false);
+            Logging log = new Logging(db);
+
+            System.out.println(db.toString());
+
+            HTTPhandler.start("127.0.0.1", 8080, db);
         } catch (Exception e) {
             e.printStackTrace();
         }

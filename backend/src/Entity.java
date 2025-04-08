@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class Entity {
-    private int uuid = -1;
-    private String name;
-    private String state;
-    private HashMap<String, String> link;
-    private String children = "";
-    private int depth;
-    private HashMap<String, String> dmp;
+    protected int uuid = -1;
+    protected String name;
+    protected String state;
+    protected HashMap<String, String> link;
+    protected String children = "";
+    protected int depth;
+    protected HashMap<String, String> dmp;
 
     public static Entity constructFromDB(HashMap<String, String> params, String name, HashMap<String, String> link, String state, int depth) {return null;};
 
@@ -43,8 +43,29 @@ public abstract class Entity {
         return "root";
     }
 
-    public void createChild() {
+    public void replaceInDB(Entity newItem, DBhandler db) throws IllegalArgumentException {
+        if (!this.getClass().equals(newItem.getClass())) {
+            throw new IllegalArgumentException("New and old item must be same type \noldItem: " + this.getClass().getSimpleName() + " | newItem: " + newItem.getClass().getSimpleName());
+        }
 
+        newItem.setChildren(this.getChildren());
+        newItem.setDepth(this.getDepth());
+        newItem.setUUID(this.getUUID());
+
+
+        db.update(uuid, newItem);
+    }
+
+    public void createChild(Entity child, DBhandler db) throws IllegalArgumentException {
+        if (this.getClass().getSimpleName().equals("Root")) {
+            db.create(child);
+        }
+
+        if (!child.getClass().equals(this.getClass())) {
+            throw new IllegalArgumentException("Parent and child must be same type\nparent: " + this.getClass().getSimpleName() + " | child: " + child.getClass().getSimpleName());
+        }
+
+        db.create(this, child);
     }
 
 
@@ -125,6 +146,10 @@ public abstract class Entity {
         this.children = children;
     }
 
+    public void clearDmp() {
+        this.dmp = new HashMap<>();
+    }
+
     public void sync(DBhandler db) {
         Entity upToDate = db.read(getUUID(), true);
         System.out.println("upToDate: " + upToDate.toString());
@@ -145,7 +170,7 @@ public abstract class Entity {
         stringBuilder.append(", link: " + link);
         stringBuilder.append(", children: " + children);
         stringBuilder.append(", depth: " + depth);
-        stringBuilder.append("}");
+        stringBuilder.append("}\n");
 
         return stringBuilder.toString();
     }
@@ -160,7 +185,7 @@ public abstract class Entity {
         stringBuilder.append(", children: " + children);
         stringBuilder.append(", depth: " + depth);
         stringBuilder.append(", dmp: " + dmp);
-        stringBuilder.append("}");
+        stringBuilder.append("}\n");
 
         return stringBuilder.toString();
     }
