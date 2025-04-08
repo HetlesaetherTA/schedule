@@ -38,7 +38,6 @@ public class HTTPhandler {
 
                 Entity parent = db.read(parentUUID);
                 Entity child = Util.jsonToEntity(body);
-                System.out.println("entity: " + child);
 
                 parent.createChild(child, db);
                 return "SUCCESS";
@@ -73,18 +72,21 @@ public class HTTPhandler {
                 res.type("application/json");
                 int uuid = Integer.parseInt(req.params(":uuid"));
                 String param = req.queryParams("recursive");
-                Boolean recursive = param != null && param.equals("true");
+                boolean recursive = param != null && param.equals("true");
 
-                if (db.delete(uuid, recursive) == null) {
+                Entity deletedEntity = db.delete(uuid, recursive);
+
+                if (deletedEntity == null) {
                     throw new Exception();
                 }
                 return "SUCCESS";
             } catch (IllegalStateException e) {
                 res.status(400);
+                return "BAD REQUEST: non-recursive delete on entity with Children";
             } catch (Exception e) {
                 res.status(404);
+                return "Illegal Delete";
             }
-            return null;
         });
     }
 }

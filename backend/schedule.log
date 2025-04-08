@@ -1,0 +1,225 @@
+Apr 08, 2025 11:17:48 PM Logging addChangeToLog
+INFO: ---- UPDATE ----
+1: {uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, 2025-04-08T22:23:36.7097699={uuid: 183, name: lol, state: Active, link: {key=val}, children: , depth: 3}
+, 2025-04-08T22:46:40.7481246={uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3}
+, 2025-04-08T22:23:45.4161837={uuid: 183, name: lol, state: Active, link: {key=val}, children: , depth: 3}
+, 2025-04-08T23:17:48.7398758={uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3}
+, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:18:30 PM Logging addChangeToLog
+INFO: ---- UPDATE ----
+1: {uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, 2025-04-08T22:23:36.7097699={uuid: 183, name: lol, state: Active, link: {key=val}, children: , depth: 3}
+, 2025-04-08T22:46:40.7481246={uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3}
+, 2025-04-08T23:18:30.9282114={uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3}
+, 2025-04-08T22:23:45.4161837={uuid: 183, name: lol, state: Active, link: {key=val}, children: , depth: 3}
+, 2025-04-08T23:17:48.7398758={uuid: 183, name: fuck, state: Active, link: {key=val}, children: 184;185;186;187;188;189;190;191;192;193;194;, depth: 3}
+, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:19:03 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:19:03.8171586, backendClient=desktop}}
+
+2: {uuid: 195, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:19:22 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:19:22.3310611, backendClient=desktop}}
+
+2: {uuid: 196, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:21:28 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:21:28.2101482, backendClient=desktop}}
+
+2: {uuid: 197, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:21:36 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:21:36.0390318, backendClient=desktop}}
+
+2: {uuid: 198, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:22:03 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 5, name: test, state: Active, link: {sign in link=www.youtube.com}, children: 6;7;8;, depth: 1, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 5, name: test, state: Active, link: {sign in link=www.youtube.com}, children: 6;7;8;199;, depth: 1, dmp: {creationTime=2025-04-08T01:23:18.3745823, frontend_dmp=info, backendClient=desktop}}
+
+2: {uuid: 199, name: fuck, state: Active, link: {key=val}, children: , depth: 2, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:22:30 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:22:30.8596663, backendClient=desktop}}
+
+2: {uuid: 200, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:28:46 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: -1, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:28:46.3933315, backendClient=desktop}}
+
+2: {uuid: 201, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:29:32 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:29:32.9299767, backendClient=desktop}}
+
+2: {uuid: 202, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:30:00 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:30:00.2638074, backendClient=desktop}}
+
+2: {uuid: 203, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:30:51 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:30:51.4816535, backendClient=desktop}}
+
+2: {uuid: 204, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:30:54 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:30:54.1476127, backendClient=desktop}}
+
+2: {uuid: 205, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:32:20 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:32:20.8469163, backendClient=desktop}}
+
+2: {uuid: 206, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:34:02 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:34:02.8213257, backendClient=desktop}}
+
+2: {uuid: 207, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:34:11 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-08T23:34:11.265819, backendClient=desktop}}
+
+2: {uuid: 208, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 08, 2025 11:59:20 PM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 20, name: test, state: Active, link: {google=https://www.google.com/}, children: , depth: 2, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 20, name: test, state: Active, link: {google=https://www.google.com/}, children: 209;, depth: 2, dmp: {creationTime=2025-04-08T02:10:28.8974316, frontend_dmp=info, backendClient=desktop}}
+
+2: {uuid: 209, name: fuck, state: Active, link: {key=val}, children: , depth: 3, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 09, 2025 12:21:55 AM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-09T00:21:55.6972351, backendClient=desktop}}
+
+2: {uuid: 210, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 09, 2025 12:26:49 AM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-09T00:26:49.3363324, backendClient=desktop}}
+
+2: {uuid: 211, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+
+Apr 09, 2025 12:26:52 AM Logging addChangeToLog
+INFO: ---- CREATE ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {}}
+
+---- HAS CHANGED ----
+1: {uuid: 0, name: root, state: Active, link: {}, children: , depth: 0, dmp: {creationTime=2025-04-09T00:26:52.3827932, backendClient=desktop}}
+
+2: {uuid: 212, name: fuck, state: Active, link: {key=val}, children: , depth: 1, dmp: {creationTime=2025-04-08T01:17:18.6105987, frontend_dmp=info, backendClient=desktop}}
+
+---- CLOSED ----
+

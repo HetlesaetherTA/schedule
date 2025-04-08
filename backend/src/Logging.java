@@ -1,26 +1,56 @@
+import org.eclipse.jetty.websocket.server.WebSocketHandler;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Logging {
     DBhandler db;
     private final DBLogger dbLogger;
+    private static final Logger logger = Logger.getLogger(Logging.class.getName());
+    private static FileHandler fileHandler;
 
     Logging(DBhandler db) {
         this.db = db;
         this.dbLogger = new DBLogger(new DBLogger.BackgroundThreadRunner());
         db.addObserver(dbLogger);
-    }
+        drawDBFrame();
 
-    public void test() {
+        try {
+            fileHandler = new FileHandler(Util.Config.getLogsPath(), true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+            logger.setLevel(Level.INFO);
+            logger.setUseParentHandlers(false);
+        } catch (IOException e) {
+            System.err.println("Could not open log file");
+            fileHandler = null;
+            e.printStackTrace();
+        }
     }
-
 
     private void clearConsole() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+        try {
+            String os = System.getProperty("os.name");
+
+            if (os.contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                new ProcessBuilder("clear").inheritIO().start().waitFor();
+            }
+        } catch (Exception e) {
+            // Fallback: if we can't clear, just print newlines
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
     }
 
     public interface DBObserver {
@@ -28,21 +58,24 @@ public class Logging {
     }
 
     private void drawDBFrame() {
-        System.out.println("drawDBFrame()");
-        // TODO: create dashboard show DB in real time on console
+        clearConsole();
+        System.out.println(db.toStringWithoutDmp());
+        String[] dmps = db.getAllDmp();
+
+        for (int i=0; i<dmps.length; i++) {
+            System.out.println(i + ": " + dmps[i]);
+        }
     }
 
 
     private Map<Runnable, String> changeToDBMap = new HashMap();
 
-    private void addChangeToLog() {
+    private void addChangeToLog(String log) {
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
+            logger.info(log);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("addChangeToLog()");
-        // TODO: send changes to log file
     }
 
     public class DBLogger implements DBObserver {
@@ -54,23 +87,29 @@ public class Logging {
 
         @Override
         public void onDBChanged(String action, String[] updatedTables, String[] tablesNewValue) {
-            Runnable logs = () -> addChangeToLog();
-            changeToDBMap.put(logs, loggerStringBuilder(action, updatedTables, tablesNewValue));
-            runner.add(logs);
+            if (fileHandler != null) {
+                Runnable logs = () -> {
+                    addChangeToLog(loggerStringBuilder(action, updatedTables, tablesNewValue));
+                };
+                changeToDBMap.put(logs, loggerStringBuilder(action, updatedTables, tablesNewValue));
+                runner.add(logs);
+            }
 
-            drawDBFrame();
+            runner.add(() -> drawDBFrame());
         }
 
         private String loggerStringBuilder(String action, String[] updatedTables, String[] tablesNewValue) {
             StringBuilder str = new StringBuilder();
             str.append("---- ").append(action).append(" ----\n");
-            for (String table : updatedTables) {
-                str.append(table).append("\n");
+            for (int i = 0; i < updatedTables.length; i++) {
+                str.append(i+1 + ": " + updatedTables[i] + "\n");
             }
-            str.append("---- has changed to: ----\n");
-            for (String table : tablesNewValue) {
-                str.append(table).append("\n");
+
+            str.append("---- HAS CHANGED ----\n");
+            for (int i = 0; i < tablesNewValue.length; i++) {
+                str.append(i+1 + ": " + tablesNewValue[i] + "\n");
             }
+            str.append("---- CLOSED ----\n");
 
             return str.toString();
         }

@@ -7,6 +7,11 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class Util {
+    public class Config {
+        public static String getLogsPath() {
+            return "schedule.log";
+        }
+    }
     public static JsonObject getDeletedEntityJson(int uuid, JsonObject dmp) {
         return new Gson().fromJson(
                 "{\"uuid\":" + uuid + "," +
@@ -97,6 +102,10 @@ public class Util {
                 return new DeletedEntity(uuid, jsonObjectToHashMap(dmp));
             }
 
+            if (uuid == 0) {
+                return new Root();
+            }
+
             depth = json.has("depth") ? json.get("depth").getAsInt() : 0;
             children = json.has("depth") ? json.get("children").getAsString() : "";
 
@@ -109,10 +118,6 @@ public class Util {
             typeParams = jsonObjectToHashMap(type.getAsJsonObject(className));
         } catch (Exception e) {
             throw new IllegalArgumentException("JSON object is not valid " + e);
-        }
-
-        if (Objects.equals(className, "root")) {
-            return new Root();
         }
 
         try {

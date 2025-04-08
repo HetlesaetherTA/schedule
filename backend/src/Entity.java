@@ -59,6 +59,7 @@ public abstract class Entity {
     public void createChild(Entity child, DBhandler db) throws IllegalArgumentException {
         if (this.getClass().getSimpleName().equals("Root")) {
             db.create(child);
+            return;
         }
 
         if (!child.getClass().equals(this.getClass())) {
@@ -152,7 +153,6 @@ public abstract class Entity {
 
     public void sync(DBhandler db) {
         Entity upToDate = db.read(getUUID(), true);
-        System.out.println("upToDate: " + upToDate.toString());
         this.children = upToDate.children;
         this.state = upToDate.state;
         this.link = upToDate.link;

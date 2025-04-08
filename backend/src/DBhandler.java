@@ -104,6 +104,7 @@ public class DBhandler implements Iterable<Entity> {
     }
 
     public Entity create(int parent_uuid, Entity newItem) {
+        Entity parent = read(parent_uuid);
         if (!dbContains(parent_uuid)) {
             return null;
         }
@@ -120,12 +121,12 @@ public class DBhandler implements Iterable<Entity> {
                 }
                 injectEntity(newItem);
                 createRelationship(parent_uuid, newItem);
-                notifyObservers("CREATE", new String[]{read(parent_uuid).toString()}, new String[]{newItem.toString()});
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not create entity (something wrong with newItem) \n" + newItem, e);
         }
 
+        notifyObservers("CREATE", new String[]{parent.toString()}, new String[]{read(parent_uuid, true).toString(), newItem.toString()});
         return newItem;
     }
 
@@ -276,6 +277,7 @@ public class DBhandler implements Iterable<Entity> {
 
     public Entity update(int uuid, Entity entry) {
         Gson gson = new Gson();
+        Entity oldEntry = read(uuid);
 
         if (!dbContains(uuid)) {
             return null;
@@ -295,6 +297,11 @@ public class DBhandler implements Iterable<Entity> {
             stmt.setInt(4, uuid);
             pushDmp(uuid, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), read(uuid).toStringWithoutDMP());
             stmt.executeUpdate();
+            notifyObservers(
+                    "UPDATE",
+                    new String[]{oldEntry.toString()},
+                    new String[]{read(uuid, true).toString()}
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to update entity with uuid: " + uuid + "\n" + entry.toString(), e);
         }
@@ -327,6 +334,9 @@ public class DBhandler implements Iterable<Entity> {
         Gson gson = new Gson();
 
         Entity removedEntity = read(uuid, true);
+        if (removedEntity.toString().equals(new DeletedEntity(removedEntity.getUUID(), removedEntity.getDmp()).toString())) {
+            return removedEntity;
+        }
 
         if (removedEntity == null) {
             return null;
@@ -361,6 +371,12 @@ public class DBhandler implements Iterable<Entity> {
         """);) {
             stmt.setInt(1, uuid);
             stmt.executeUpdate();
+
+            notifyObservers(
+                    "DELETE",
+                    new String[]{removedEntity.toString()},
+                    new String[]{new DeletedEntity(removedEntity.getUUID(), removedEntity.getDmp()).toString()}
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -372,6 +388,11 @@ public class DBhandler implements Iterable<Entity> {
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("DROP TABLE IF EXISTS `entities`");
             }
+            notifyObservers(
+                    "DROPPED ENTITIES!",
+                    null,
+                    null
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -452,47 +473,90 @@ public class DBhandler implements Iterable<Entity> {
         }
     }
 
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
+    public String toStringWithoutDmp() {
+        return toString(false);
+    }
 
-        try (Statement stmt = conn.createStatement()) {
-            try (ResultSet rs = stmt.executeQuery("SELECT * FROM `entities`")) {
+    public String[] getAllDmp() {
+        List<String> dmpEntries = new ArrayList<>();
 
-                ResultSetMetaData meta = rs.getMetaData();
+        String sql = "SELECT dmp FROM entities";
 
-                List<String[]> rows = new ArrayList<>();
-                int[] columnWidths = new int[meta.getColumnCount()];
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
-                // Add headers
-                String[] headers = new String[meta.getColumnCount()];
-                for (int i = 0; i < headers.length; i++) {
-                    headers[i] = meta.getColumnName(i + 1);
-                    columnWidths[i] = headers[i].length();
-                }
-
-                rows.add(headers);
-
-                // Add body
-                while (rs.next()) {
-                    String[] row = new String[meta.getColumnCount()];
-                    for (int i = 0; i < row.length; i++) {
-                        row[i] = rs.getString(headers[i]) != null ? rs.getString(headers[i]) : "NULL";
-                        columnWidths[i] = Math.max(columnWidths[i], row[i].length());
-                    }
-                    rows.add(row);
-                }
-
-                for (String[] row : rows) {
-                    for (int i = 0; i < row.length; i++) {
-                        sb.append(pad(row[i], columnWidths[i])).append(" | ");
-                    }
-                    sb.append("\n");
+            while (rs.next()) {
+                String dmpValue = rs.getString("dmp");
+                if (dmpValue != null) {
+                    dmpEntries.add(dmpValue);
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
-        };
+        }
+
+        return dmpEntries.toArray(new String[0]);
+    }
+
+    public String toString(boolean withDmp) {
+        StringBuilder sb = new StringBuilder();
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM `entities`")) {
+
+            ResultSetMetaData meta = rs.getMetaData();
+            int totalColumns = meta.getColumnCount();
+
+            // Step 1: Prepare which columns to include
+            List<String> headers = new ArrayList<>();
+            List<Integer> includedIndexes = new ArrayList<>();
+
+            for (int i = 0; i < totalColumns; i++) {
+                String columnName = meta.getColumnName(i + 1);
+                if (withDmp || !columnName.equalsIgnoreCase("dmp")) {
+                    headers.add(columnName);
+                    includedIndexes.add(i + 1); // JDBC indexes are 1-based
+                }
+            }
+
+            // Step 2: Calculate initial column widths
+            int[] columnWidths = new int[headers.size()];
+            for (int i = 0; i < headers.size(); i++) {
+                columnWidths[i] = headers.get(i).length();
+            }
+
+            // Step 3: Add header row
+            List<String[]> rows = new ArrayList<>();
+            rows.add(headers.toArray(new String[0]));
+
+            // Step 4: Add data rows
+            while (rs.next()) {
+                String[] row = new String[includedIndexes.size()];
+                for (int i = 0; i < includedIndexes.size(); i++) {
+                    String value = rs.getString(includedIndexes.get(i));
+                    row[i] = value != null ? value : "NULL";
+                    columnWidths[i] = Math.max(columnWidths[i], row[i].length());
+                }
+                rows.add(row);
+            }
+
+            // Step 5: Build output
+            for (String[] row : rows) {
+                for (int i = 0; i < row.length; i++) {
+                    sb.append(pad(row[i], columnWidths[i])).append(" | ");
+                }
+                sb.append("\n");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return sb.toString();
+    }
+
+    public String toString() {
+        return toString(true);
     }
 
     private static String pad(String s, int width) {
