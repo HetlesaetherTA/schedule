@@ -104,10 +104,11 @@ public class DBhandler implements Iterable<Entity> {
     }
 
     public Entity create(int parent_uuid, Entity newItem) {
-        Entity parent = read(parent_uuid);
         if (!dbContains(parent_uuid)) {
             return null;
         }
+
+        Entity parent = read(parent_uuid);
 
         try (PreparedStatement stmt = conn.prepareStatement("""
             SELECT depth FROM `entities` WHERE uuid= ?
@@ -187,8 +188,7 @@ public class DBhandler implements Iterable<Entity> {
             stmt.setInt(1, uuid);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
-                    // uuid not in DB
-                    return new JsonObject();
+                    return null;
                 }
 
                 // get Name
@@ -214,7 +214,15 @@ public class DBhandler implements Iterable<Entity> {
                 String children = rs.getString("children");
 
                 // get and handle type
-                JsonObject type = JsonParser.parseString(rs.getString("type")).getAsJsonObject();
+                String typeRaw = rs.getString("type");
+                JsonElement typeElement = JsonParser.parseString(typeRaw);
+
+                if (typeElement.isJsonPrimitive() && typeElement.getAsJsonPrimitive().isString()) {
+                    // Parse the inner string as JSON
+                    typeElement = JsonParser.parseString(typeElement.getAsString());
+                }
+
+                JsonObject type = typeElement.getAsJsonObject();
 
                 JsonObject returnValue = new JsonObject();
                 returnValue.addProperty("uuid", uuid);
@@ -231,7 +239,7 @@ public class DBhandler implements Iterable<Entity> {
             } catch (Exception e) {
             e.printStackTrace();
         }
-        return new JsonObject();
+        return null;
     };
 
     public List<Entity> readAll() {
@@ -288,13 +296,15 @@ public class DBhandler implements Iterable<Entity> {
                     UPDATE `entities`
                     SET name = ?,
                     link = ?,
-                    state = ?
+                    state = ?,
+                    type = ?
                     WHERE uuid = ?
                     """)) {
             stmt.setString(1, entry.getName());
             stmt.setString(2, gson.toJson(entry.getLink()));
             stmt.setString(3, entry.getState());
-            stmt.setInt(4, uuid);
+            stmt.setString(4, gson.toJson(entry.parseType()));
+            stmt.setInt(5, uuid);
             pushDmp(uuid, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), read(uuid).toStringWithoutDMP());
             stmt.executeUpdate();
             notifyObservers(
@@ -303,6 +313,7 @@ public class DBhandler implements Iterable<Entity> {
                     new String[]{read(uuid, true).toString()}
             );
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IllegalArgumentException("Failed to update entity with uuid: " + uuid + "\n" + entry.toString(), e);
         }
         return read(uuid);
@@ -331,6 +342,10 @@ public class DBhandler implements Iterable<Entity> {
         if (uuid == 0) {
             throw new IllegalArgumentException("root cannot be deleted");
         }
+
+        if (!dbContains(uuid)) {
+            return null;
+        }
         Gson gson = new Gson();
 
         Entity removedEntity = read(uuid, true);
@@ -348,7 +363,12 @@ public class DBhandler implements Iterable<Entity> {
                 .toArray(Integer[]::new);
 
         if (!recursive && childrenUUIDs.length > 0) {
-            throw new IllegalStateException("Recursive deletion not checked and entity has children");
+            for (int i = 0; i < childrenUUIDs.length; i++) {
+                Entity child = read(childrenUUIDs[i], true);
+                if (!child.toString().equals(new DeletedEntity(child.getUUID(), child.getDmp()).toString())) {
+                    throw new IllegalStateException("Recursive deletion not checked and entity has children");
+            }
+            }
         }
 
         if (recursive) {

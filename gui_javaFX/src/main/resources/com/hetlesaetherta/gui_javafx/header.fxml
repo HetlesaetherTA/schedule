@@ -1,0 +1,42 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      spacing="20"
+      alignment="TOP_CENTER"
+      style="-fx-background-color: white; -fx-padding: 20;">
+
+    <!-- Top Bar -->
+    <HBox spacing="20" alignment="CENTER" prefHeight="50"
+          style="-fx-background-color: #f0f0f0; -fx-padding: 10; -fx-background-radius: 10;">
+        <Button fx:id="backButton" text="← Back" onAction="#goBack"/>
+        <Label fx:id="name" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <Button text="＋" onAction="#spawnCreateScreen"/>
+    </HBox>
+
+    <!-- Info -->
+    <VBox spacing="15" alignment="TOP_LEFT" style="-fx-padding: 10;">
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="State:" style="-fx-font-weight: bold;"/>
+            <Label fx:id="state" style="-fx-text-fill: #333;"/>
+            <Button text="✎" onAction="#spawnUpdateScreen"/>
+            <Button text="☠️" onAction="#deleteEntry"/>
+            <CheckBox fx:id="recursiveDelete" text="Recursive?"/>
+        </HBox>
+
+        <VBox spacing="5" alignment="TOP_LEFT">
+            <Label text="Links:" style="-fx-font-weight: bold;"/>
+            <VBox fx:id="linkBox" spacing="5" style="-fx-background-color: #f8f8f8; -fx-padding: 8; -fx-background-radius: 6;"/>
+        </VBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Finish By:" style="-fx-font-weight: bold;"/>
+            <Label fx:id="doneBy" style="-fx-text-fill: #333;"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

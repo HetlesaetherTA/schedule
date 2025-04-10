@@ -2,11 +2,10 @@
   <artifact type="jar" name="backend:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/backend_jar</output-path>
     <root id="archive" name="backend.jar">
-      <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/../exe/META-INF/MANIFEST.MF" />
-      </element>
       <element id="module-output" name="backend" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/sqlite-jdbc-3.49.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/gson-2.12.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/error_prone_annotations-2.36.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/spark-core-2.9.4.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/slf4j-api-1.7.25.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jetty-server-9.4.48.v20220622.jar" path-in-jar="/" />
@@ -25,8 +24,6 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jetty-client-9.4.48.v20220622.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/websocket-servlet-9.4.48.v20220622.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/websocket-api-9.4.48.v20220622.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/lib/gson-2.12.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/lib/error_prone_annotations-2.36.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

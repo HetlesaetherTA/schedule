@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hetlesaetherta.gui_javafx.AppController">
+
+    <!-- Top: Optional, could put App Title here -->
+    <!--<top>
+        <Label text="App Title" alignment="CENTER" />
+    </top>-->
+
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <VBox fx:id="parentVBox" spacing="20" alignment="CENTER">
+                <StackPane fx:id="rootPane" alignment="CENTER">
+                    <GridPane fx:id="grid" hgap="10" vgap="10" />
+                </StackPane>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <VBox fx:id="createEntryPane" visible="false" managed="false" spacing="15" alignment="CENTER" style="-fx-background-color: #fafafa; -fx-padding: 20; -fx-border-color: #ccc; -fx-border-radius: 10; -fx-background-radius: 10;">
+            <Button alignment="TOP_LEFT" text="Fill Test Data" onAction="#fillTextFields" />
+            <HBox alignment="TOP_RIGHT">
+                <Button text="x" onMouseClicked="#killCreateUpdateScreen" style="-fx-background-color: transparent; -fx-font-size: 18px; -fx-text-fill: black;"/>
+            </HBox>
+            <Label text="Create / Update Entry" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+            <VBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Name:" minWidth="100"/>
+                    <TextField fx:id="nameField" promptText="Enter name..."/>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="State:" minWidth="100"/>
+                    <TextField fx:id="stateField" promptText="Enter state..."/>
+                </HBox>
+
+                <VBox spacing="10" fx:id="linkFieldsBox" alignment="CENTER_LEFT">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Link:" minWidth="100"/>
+                        <TextField fx:id="firstKeyField" promptText="Enter key..."/>
+                        <TextField fx:id="firstValueField" promptText="Enter value..."/>
+                        <Button text="＋" onAction="#addLinkField" />
+                    </HBox>
+                </VBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Finish By:" minWidth="100"/>
+                    <TextField fx:id="doneByField" promptText="YYYY-MM-DDTHH:MM:SS"/>
+                </HBox>
+            </VBox>
+
+            <Button fx:id="confirmButton" text="Create" onAction="#createNewEntry" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>

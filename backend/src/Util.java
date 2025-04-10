@@ -74,7 +74,7 @@ public class Util {
     }
 
     public static Entity jsonToEntity(JsonObject json) {
-        if (json == null) {
+        if (json == null || json.isJsonNull()) {
             return null;
         }
 
@@ -110,6 +110,7 @@ public class Util {
             children = json.has("depth") ? json.get("children").getAsString() : "";
 
             type = json.getAsJsonObject("type");
+            System.out.println(json);
             name = json.get("name").getAsString();
             link = json.getAsJsonObject("link");
             state = json.get("state").getAsString();
@@ -117,7 +118,7 @@ public class Util {
             className = type.keySet().iterator().next();
             typeParams = jsonObjectToHashMap(type.getAsJsonObject(className));
         } catch (Exception e) {
-            throw new IllegalArgumentException("JSON object is not valid " + e);
+            return null;
         }
 
         try {
@@ -154,6 +155,11 @@ public class Util {
         return jsonObject;
     }
 
+    public static JsonObject packageJsonForAPI(JsonObject json, int uuid) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(String.valueOf(uuid), json);
+        return jsonObject;
+    }
     public static JsonObject packageJsonForAPI(JsonObject json) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(json.get("uuid").getAsString(), json);

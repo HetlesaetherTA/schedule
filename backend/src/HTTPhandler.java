@@ -40,7 +40,7 @@ public class HTTPhandler {
                 Entity child = Util.jsonToEntity(body);
 
                 parent.createChild(child, db);
-                return "SUCCESS";
+                return Util.packageJsonForAPI(db.readAsJson(child.getUUID()));
             } catch (Exception e) {
                 e.printStackTrace();
                 res.status(400);
@@ -57,11 +57,10 @@ public class HTTPhandler {
                 Entity oldItem = db.read(uuid);
                 Entity newItem = Util.jsonToEntity(body);
 
-                System.out.println(db);
-
                 oldItem.replaceInDB(newItem, db);
-                return "SUCCESS";
+                return Util.packageJsonForAPI(body.getAsJsonObject(), uuid);
             } catch (Exception e) {
+                e.printStackTrace();
                 res.status(404);
                 return null;
             }

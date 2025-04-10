@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox
+        fx:id="root"
+        fx:controller="com.hetlesaetherta.gui_javafx.EntryController"
+        xmlns:fx="http://javafx.com/fxml"
+        spacing="8"
+        prefWidth="200"
+        alignment="CENTER"
+        style="-fx-background-color: white;
+               -fx-border-color: #ccc;
+               -fx-border-width: 1;
+               -fx-border-radius: 8;
+               -fx-background-radius: 8;
+               -fx-padding: 12;
+               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 2);"
+        onMouseClicked="#openEntry"
+        onMouseEntered="#onMouseEnter"
+        onMouseExited="#onMouseExit">
+
+    <Label fx:id="nameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    <Label fx:id="stateLabel" style="-fx-text-fill: #555;"/>
+    <Label fx:id="linkLabel" style="-fx-text-fill: #555;"/>
+    <Label fx:id="timeUntilExpLabel" style="-fx-text-fill: #999;"/>
+
+</VBox>
