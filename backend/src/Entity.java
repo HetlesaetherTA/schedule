@@ -87,7 +87,7 @@ public abstract class Entity {
     }
 
     // method for Summplier class, simplifies error handling for in generateDMP().
-    public static Supplier<String> safe(SupplierWithException<String> supplier) {
+    private static Supplier<String> safe(SupplierWithException<String> supplier) {
         return () -> {
             try {
                 return supplier.get();

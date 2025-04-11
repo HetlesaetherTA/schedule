@@ -265,7 +265,7 @@ public class DBhandler implements Iterable<Entity> {
         return 0;
     }
 
-    private boolean dbContains(int uuid) {
+    public boolean dbContains(int uuid) {
         try (PreparedStatement stmt = conn.prepareStatement("""
         SELECT 1
         FROM entities
@@ -519,7 +519,7 @@ public class DBhandler implements Iterable<Entity> {
         return dmpEntries.toArray(new String[0]);
     }
 
-    public String toString(boolean withDmp) {
+    String toString(boolean withDmp) {
         StringBuilder sb = new StringBuilder();
 
         try (Statement stmt = conn.createStatement();
