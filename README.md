@@ -30,7 +30,11 @@ I also implemented my own custom interfaces, for example using the Observer patt
 
 The main struct-like functions in the application are implementations of an abstract class (Entity), and this abstraction is used a lot throughout development of this project, and itself used as a validator for legal database entries.
 
-The project is strongly encapsulated. The main method is literally just: DB db = new DBhandler(true) Logging log = new Logging(db) HTTPhandler.start(Util.Config.getIP(), Util.Config.getPort(), db) inside a try-catch statement.
+The project is strongly encapsulated. The main method is literally just: 
+`DB db = new DBhandler(true)`
+`Logging log = new Logging(db)` 
+`HTTPhandler.start(Util.Config.getIP(), Util.Config.getPort(), db)` 
+inside a try-catch statement.
 
 I'm using lambdas a lot, store local log files in Logging, and use FXML in the frontend.
 
@@ -61,7 +65,7 @@ Since the frontend basically just performs CRUD operations over HTTP and draws a
 
 **Backend end the right, front end on the left**
 
-![[Pasted image 20250411202135.png]]
+![[./ProjectDiagram.png]]
 
 ---
 **Everything beyond this point is general docs, not directly relevant to school assignment**
