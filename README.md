@@ -62,9 +62,9 @@ I therefore chose to sink all of my tests into DBhandler, in which I made 9 JUni
 
 Since the frontend basically just performs CRUD operations over HTTP and draws a filesystem-like nested GUI, there wasn't really anything to test there. If an entry isn't accepted, I get a 404 HTTP request and it would stack trace on the server. When making the frontend, the vast majority of the bugs I discovered were frontend issues, not backend ones. Even though a few sneaky ones managed to get through for a while.
 
+# Diagram 
 
 **Backend end the right, front end on the left**
-
 ![Diagram of Project](./ProjectDiagram.png)
 
 ---
