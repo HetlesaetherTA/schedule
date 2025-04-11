@@ -65,7 +65,7 @@ Since the frontend basically just performs CRUD operations over HTTP and draws a
 
 **Backend end the right, front end on the left**
 
-![[./ProjectDiagram.png]]
+![Diagram of Project](./ProjectDiagram.png)
 
 ---
 **Everything beyond this point is general docs, not directly relevant to school assignment**
